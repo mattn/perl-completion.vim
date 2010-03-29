@@ -342,7 +342,16 @@ endf
 
 " perl builtin functions
 fun! s:CompFunction(base,context)
-    return s:StringFilter(g:p5bfunctions,a:base)
+    let l:cache = GetCacheNS('f',a:base)
+    if type(l:cache) != type(0)
+        return l:cache
+    endif
+    return SetCacheNS('f',a:base,s:StringFilter(g:p5bfunctions,a:base))
+endf
+
+fun! s:CompSymbol(base,context)
+    let symbols = [ '__PACKAGE__' ] 
+    return s:StringFilter( symbols , a:base  )
 endf
 
 fun! s:CompBufferFunction(base,context)
@@ -727,13 +736,15 @@ cal s:addRule({'only':1, 'context': '@$', 'backward': '\<\w\+$', 'comp': functio
 
 cal s:addRule({'only':1, 'context': '&$', 'backward': '\<\w\+$', 'comp': function('s:CompBufferFunction') })
 
+
+" builtin symbol completion (currently only for __PACKAGE__)
+cal s:addRule({'context': '$', 'backward': '__\w*$'     , 'comp': function('s:CompSymbol') })
+
 " function completion
-cal s:addRule({'context': '\(->\|\$\)\@<!$', 'backward': '\<\w\+$' , 'comp': function('s:CompFunction') })
+cal s:addRule({'context': '\(->\|\$\)\@<!$', 'backward': '\<\w\+$'     , 'comp': function('s:CompFunction') })
 cal s:addRule({'context': '\(\$self\|__PACKAGE__\)->$'  , 'backward': '\<\w\+$' , 'only':1 , 'comp': function('s:CompBufferFunction') })
 cal s:addRule({'context': '\$\w\+->$'  , 'backward': '\<\w\+$' , 'comp': function('s:CompObjectMethod') })
 cal s:addRule({'context': '\<[a-zA-Z0-9:]\+->$'    , 'backward': '\w*$' , 'comp': function('s:CompClassFunction') })
-
-
 
 " string completion
 " cal s:addRule({'context': '\s''', 'backward': '\_[^'']*$' , 'comp': function('s:CompQString') })
