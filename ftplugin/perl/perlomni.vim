@@ -354,6 +354,15 @@ fun! s:CompSymbol(base,context)
     return s:StringFilter( symbols , a:base  )
 endf
 
+fun! s:CompCurrentFileFunction(base,context)
+    let file = expand('%')
+    let funcs = extend( s:scanFunctionFromSingleClassFile(file), 
+            \ s:scanFunctionFromBaseClassFile(file) )
+    let result = filter( copy(funcs),"stridx(v:val,'".a:base."') == 0 && v:val != '".a:base."'" )
+    return result
+    " return SetCacheNS('XXX',a:base.expand('%'),result)
+endf
+
 fun! s:CompBufferFunction(base,context)
     let l:cache = GetCacheNS('buf_func',a:base.expand('%'))
     if type(l:cache) != type(0)
@@ -744,7 +753,7 @@ cal s:addRule({'context': '^\s*$', 'backward': '__\w*$'     , 'comp': function('
 " function completion
 cal s:addRule({'context': '\(->\|\$\)\@<!$', 'backward': '\<\w\+$'     , 'comp': function('s:CompFunction') })
 
-cal s:addRule({'context': '\(\$self\|__PACKAGE__\)->$'  , 'backward': '\<\w\+$' , 'only':1 , 'comp': function('s:CompBufferFunction') })
+cal s:addRule({'context': '\(\$self\|__PACKAGE__\)->$'  , 'backward': '\<\w\+$' , 'only':1 , 'comp': function('s:CompCurrentFileFunction') })
 cal s:addRule({'context': '\$\w\+->$'  , 'backward': '\<\w\+$' , 'comp': function('s:CompObjectMethod') })
 cal s:addRule({'context': '\<[a-zA-Z0-9:]\+->$'    , 'backward': '\w*$' , 'comp': function('s:CompClassFunction') })
 
