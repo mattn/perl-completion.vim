@@ -68,8 +68,8 @@ fun! s:baseClassFromFile(file)
         \ ' ''^(?:use\s+(?:base|parent)\s+|extends\s+)(.*);''' ),"\n")
     let classes = [ ]
     for i in range(0,len(list)-1)
-        let list[i] = substitute(list[i],'^\(qw[(''"\[]\|(\|[''"]\)\s*','','')
-        let list[i] = substitute(list[i],'[)''"]$','','')
+        let list[i] = substitute(list[i],'^\(qw[/(''"\[]\|(\|[''"]\)\s*','','')
+        let list[i] = substitute(list[i],'[/)''"]$','','')
         let list[i] = substitute(list[i],'[,''"]',' ','g')
         cal extend( classes , split(list[i],'\s\+'))
     endfor
