@@ -265,28 +265,36 @@ fun! PerlComplete(findstart, base)
                 if match == 0
                     continue
                 endif
+                unlet match
             endif
 
-            if ( has_key( rule ,'head') && b:paragraph_head =~ rule.head && lefttext =~ rule.context ) ||
-                    \ ( ! has_key(rule,'head') && lefttext =~ rule.context  )
-
-                if type(rule.comp) == type(function('tr'))
-                    cal extend(b:comps, call( rule.comp, [basetext,lefttext] ) )
-                elseif type(rule.comp) == type([])
-                    cal extend(b:comps,rule.comp)
-                else
-                    echoerr "Unknown completion handle type"
-                endif
-
-                if has_key(rule,'only') && rule.only == 1
-                    return bwidx
-                endif
-
-                " save first backward index
-                if first_bwidx == -1
-                    let first_bwidx = bwidx
+            if has_key(rule,'head')
+                if b:paragraph_head !~ rule.head
+                    continue
                 endif
             endif
+
+            if lefttext !~ rule.context
+                continue
+            endif
+
+            if type(rule.comp) == type(function('tr'))
+                cal extend(b:comps, call( rule.comp, [basetext,lefttext] ) )
+            elseif type(rule.comp) == type([])
+                cal extend(b:comps,rule.comp)
+            else
+                echoerr "Unknown completion handle type"
+            endif
+
+            if has_key(rule,'only') && rule.only == 1
+                return bwidx
+            endif
+
+            " save first backward index
+            if first_bwidx == -1
+                let first_bwidx = bwidx
+            endif
+
         endfor
         return first_bwidx
     else 
@@ -818,7 +826,7 @@ finish
 
 
 extends 'Moose::Meta::Attribute';
-use base qw(App::CLI);
+use base qw(App
 
 " module compeltion
 my $obj = new Jifty::Web;
