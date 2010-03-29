@@ -9,3 +9,4 @@ x base class function completion
 * dbix::class completion
 * class variable completion
 * export function completion
+* built-in variable completion

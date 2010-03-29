@@ -68,9 +68,7 @@ fun! s:baseClassFromFile(file)
         \ ' ''^(?:use\s+(?:base|parent)\s+|extends\s+)(.*);''' ),"\n")
     let classes = [ ]
     for i in range(0,len(list)-1)
-        let list[i] = substitute(list[i],'^\(qw[/(''"\[]\|(\|[''"]\)\s*','','')
-        let list[i] = substitute(list[i],'[/)''"]$','','')
-        let list[i] = substitute(list[i],'[,''"]',' ','g')
+        let list[i] = s:extractClassNamesFromSt(list[i])
         cal extend( classes , split(list[i],'\s\+'))
     endfor
     return SetCacheNS('clsf_bcls',a:file,classes)
@@ -163,6 +161,29 @@ fun! s:parseParagraphHead(fromLine)
     return b:paragraph_head
 endf
 
+fun! s:extractClassNamesFromSt(line)
+    let cls = matchstr(a:line,'\(^\s*\(use\s\+\(base\|parent\)\|extends\)\s\+\)\@<=.*\(\s*;\)\@=')
+    let cls = substitute(cls,'^\(qw[/(''"\[]\|(\|[''"]\)\s*','','')
+    let cls = substitute(cls,'[/)''"]$','','')
+    let cls = substitute(cls,'[,''"]',' ','g')
+    return cls
+endf
+
+" pure vim
+fun! s:parseCurrentClassParents()
+    " a range
+    let lines = getline(1,'$')
+    let classes = [ ]
+    for line in lines
+        if line =~ '\(^\s*\(use\s\+\(base\|parent\)\|extends\)\s\+\)\@<=.*\(\s*;\)\@='
+            let cls = s:extractClassNamesFromSt(line)
+            cal extend( classes , split(cls,'\s\+'))
+        endif
+    endfor
+    return classes
+endf
+" echo s:parseCurrentClassParents()
+
 fun! PerlComplete(findstart, base)
     let line = getline('.')
     let lnum = line('.')
@@ -178,6 +199,7 @@ fun! PerlComplete(findstart, base)
         let b:colpos   = col('.') - 1
 
         " let b:pcontext
+        let b:current_baseclass   = s:parseCurrentClassParents()
         let b:paragraph_head = s:parseParagraphHead(lnum)
 
         let first_bwidx = -1
@@ -227,6 +249,23 @@ fun! PerlComplete(findstart, base)
 "             endif
             " echo string(rule.comp) . ' regexp: "' . rule.context . '" ' . "lcontext:'" .lefttext . "'" .  " basetext:'" .basetext . "'"
             " sleep 3
+            if has_key( rule, 'baseclass') && len(b:current_baseclass) > 0
+                let match = 0
+                if type(rule.base) == type([])
+                    for b in rule.base
+                        if index(b:current_baseclass,b) != -1
+                            let match = 1
+                        endif
+                    endfor
+                elseif type(rule.base) == type('')
+                    if index(b:current_baseclass,rule.base) != -1
+                        let match = 1
+                    endif
+                endif
+                if match == 0
+                    continue
+                endif
+            endif
 
             if ( has_key( rule ,'head') && b:paragraph_head =~ rule.head && lefttext =~ rule.context ) ||
                     \ ( ! has_key(rule,'head') && lefttext =~ rule.context  )
