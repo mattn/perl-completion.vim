@@ -729,7 +729,7 @@ cal s:addRule({'only':1, 'context': '&$', 'backward': '\<\w\+$', 'comp': functio
 
 " function completion
 cal s:addRule({'context': '\(->\|\$\)\@<!$', 'backward': '\<\w\+$' , 'comp': function('s:CompFunction') })
-cal s:addRule({'context': '\$self->$'  , 'backward': '\<\w\+$' , 'only':1 , 'comp': function('s:CompBufferFunction') })
+cal s:addRule({'context': '\(\$self\|__PACKAGE__\)->$'  , 'backward': '\<\w\+$' , 'only':1 , 'comp': function('s:CompBufferFunction') })
 cal s:addRule({'context': '\$\w\+->$'  , 'backward': '\<\w\+$' , 'comp': function('s:CompObjectMethod') })
 cal s:addRule({'context': '\<[a-zA-Z0-9:]\+->$'    , 'backward': '\w*$' , 'comp': function('s:CompClassFunction') })
 
