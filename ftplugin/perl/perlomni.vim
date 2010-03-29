@@ -737,14 +737,17 @@ cal s:addRule({'only':1, 'context': '@$', 'backward': '\<\w\+$', 'comp': functio
 cal s:addRule({'only':1, 'context': '&$', 'backward': '\<\w\+$', 'comp': function('s:CompBufferFunction') })
 
 
-" builtin symbol completion (currently only for __PACKAGE__)
-cal s:addRule({'context': '$', 'backward': '__\w*$'     , 'comp': function('s:CompSymbol') })
+
+" builtin symbol completion (currently only for __PACKAGE__) XXX: Fix context
+cal s:addRule({'context': '^\s*$', 'backward': '__\w*$'     , 'comp': function('s:CompSymbol') })
 
 " function completion
 cal s:addRule({'context': '\(->\|\$\)\@<!$', 'backward': '\<\w\+$'     , 'comp': function('s:CompFunction') })
+
 cal s:addRule({'context': '\(\$self\|__PACKAGE__\)->$'  , 'backward': '\<\w\+$' , 'only':1 , 'comp': function('s:CompBufferFunction') })
 cal s:addRule({'context': '\$\w\+->$'  , 'backward': '\<\w\+$' , 'comp': function('s:CompObjectMethod') })
 cal s:addRule({'context': '\<[a-zA-Z0-9:]\+->$'    , 'backward': '\w*$' , 'comp': function('s:CompClassFunction') })
+
 
 " string completion
 " cal s:addRule({'context': '\s''', 'backward': '\_[^'']*$' , 'comp': function('s:CompQString') })
