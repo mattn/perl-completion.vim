@@ -10,3 +10,8 @@ x base class function completion
 * class variable completion
 * export function completion
 * built-in variable completion
+
+= dbix 
+    * parse classdata:
+        __PACKAGE__->mk_classdata
+
