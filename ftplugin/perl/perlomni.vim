@@ -251,14 +251,14 @@ fun! PerlComplete(findstart, base)
             " sleep 3
             if has_key( rule, 'baseclass') && len(b:current_baseclass) > 0
                 let match = 0
-                if type(rule.base) == type([])
-                    for b in rule.base
+                if type(rule.baseclass) == type([])
+                    for b in rule.baseclass
                         if index(b:current_baseclass,b) != -1
                             let match = 1
                         endif
                     endfor
-                elseif type(rule.base) == type('')
-                    if index(b:current_baseclass,rule.base) != -1
+                elseif type(rule.baseclass) == type('')
+                    if index(b:current_baseclass,rule.baseclass) != -1
                         let match = 1
                     endif
                 endif
@@ -406,7 +406,6 @@ fun! s:CompCurrentFileFunction(base,context)
     let funcs = extend( s:scanFunctionFromSingleClassFile(file), 
             \ s:scanFunctionFromBaseClassFile(file) )
     let result = filter( copy(funcs),"stridx(v:val,'".a:base."') == 0 && v:val != '".a:base."'" )
-    echo result | sleep 1
     return result
 endf
 
@@ -819,7 +818,7 @@ endf
 " echo s:CompDBIx('','__PACKAGE__->')
 
 
-cal s:addRule({'context': '__PACKAGE__->$','backward': '\<\w\+$', 'comp': function('s:CompDBIx') })
+cal s:addRule({'baseclass': [ 'DBIx::Class::Core' ] ,'context': '__PACKAGE__->$','backward': '\<\w\+$', 'comp': function('s:CompDBIx') })
 
 
 " string completion
