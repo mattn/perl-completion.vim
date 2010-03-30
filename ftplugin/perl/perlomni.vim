@@ -406,8 +406,8 @@ fun! s:CompCurrentFileFunction(base,context)
     let funcs = extend( s:scanFunctionFromSingleClassFile(file), 
             \ s:scanFunctionFromBaseClassFile(file) )
     let result = filter( copy(funcs),"stridx(v:val,'".a:base."') == 0 && v:val != '".a:base."'" )
+    echo result | sleep 1
     return result
-    " return SetCacheNS('XXX',a:base.expand('%'),result)
 endf
 
 fun! s:CompBufferFunction(base,context)
@@ -548,6 +548,7 @@ fun! s:CompQString(base,context)
     let strings = s:scanQString( lines )
     return s:StringFilter(strings,a:base)
 endf
+
 
 " let sortedlist = sort(mylist, "MyCompare")
 
@@ -719,14 +720,17 @@ fun! s:scanFunctionFromList(lines)
 endf
 
 fun! s:scanFunctionFromSingleClassFile(file)
-    return split(system('grep-pattern.pl ' . a:file . ' ''^\s*(?:sub|has)\s+(\w+)'' | sort | uniq '),"\n")
+    let list = split(system('grep-pattern.pl ' . a:file . ' ''^\s*(?:sub|has)\s+(\w+)'' | sort | uniq '),"\n")
+    return list
 endf
 
 fun! s:scanFunctionFromClass(class)
     let classfile = s:locateClassFile(a:class)
-    return classfile == '' ? [ ] :
-        \ extend( s:scanFunctionFromSingleClassFile(classfile), 
-            \ s:scanFunctionFromBaseClassFile(classfile) )
+    if classfile == '' 
+        return [ ]
+    endif
+    return s:scanFunctionFromSingleClassFile(classfile) +
+            \ s:scanFunctionFromBaseClassFile(classfile) 
 endf
 " echo s:scanFunctionFromClass('Jifty::DBI::Record')
 " echo s:scanFunctionFromClass('CGI')
@@ -800,9 +804,22 @@ cal s:addRule({'context': '^\s*$', 'backward': '__\w*$'     , 'comp': function('
 " function completion
 cal s:addRule({'context': '\(->\|\$\)\@<!$', 'backward': '\<\w\+$'     , 'comp': function('s:CompFunction') })
 
-cal s:addRule({'context': '\(\$self\|__PACKAGE__\)->$'  , 'backward': '\<\w\+$' , 'only':1 , 'comp': function('s:CompCurrentFileFunction') })
+cal s:addRule({'context': '\(\$self\|__PACKAGE__\)->$'  , 'backward': '\<\w\+$' , 'comp': function('s:CompCurrentFileFunction') })
 cal s:addRule({'context': '\$\w\+->$'  , 'backward': '\<\w\+$' , 'comp': function('s:CompObjectMethod') })
 cal s:addRule({'context': '\<[a-zA-Z0-9:]\+->$'    , 'backward': '\w*$' , 'comp': function('s:CompClassFunction') })
+
+
+fun! s:CompDBIx(base,context)
+    let funcs = s:scanFunctionFromClass('DBIx::Class::Schema')
+
+    " filter out private methods
+    cal filter( funcs , " v:val !~ '^_' " )
+    return s:StringFilter( funcs , a:base )
+endf
+" echo s:CompDBIx('','__PACKAGE__->')
+
+
+cal s:addRule({'context': '__PACKAGE__->$','backward': '\<\w\+$', 'comp': function('s:CompDBIx') })
 
 
 " string completion
